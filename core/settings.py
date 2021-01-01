@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import environ
+import os
 
 env = environ.Env()
 environ.Env.read_env(env_file='.env')
@@ -28,7 +29,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.str('ALLOWED_HOSTS').split(' ')
 
 
 # Application definition
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 
     # third party
     'mptt',
+    'rest_framework',
     
     # custom
     'todos'
@@ -82,10 +84,22 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     # read os.environ['DATABASE_URL'] and raises ImproperlyConfigured exception if not found
+#     'default': env.db(),
+#     'extra': env.db('SQLITE_URL', default='sqlite:////tmp/sqlite3.db')
+# }
+
+
 DATABASES = {
-    # read os.environ['DATABASE_URL'] and raises ImproperlyConfigured exception if not found
-    'default': env.db(),
-    'extra': env.db('SQLITE_URL', default='sqlite:////tmp/sqlite3.db')
+    'default': {
+        "ENGINE": env.str("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": env.str("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": env.str("SQL_USER", "user"),
+        "PASSWORD": env.str("SQL_PASSWORD", "password"),
+        "HOST": env.str("SQL_HOST", "localhost"),
+        "PORT": env.str("SQL_PORT", "5432"),
+    }
 }
 
 
@@ -126,5 +140,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-CACHE_TIME = 60 * 60 * 2
+CACHE_TIME = 1

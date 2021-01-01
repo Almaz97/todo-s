@@ -13,10 +13,6 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
 
     @method_decorator(cache_page(settings.CACHE_TIME))
-    def list(self, request, *args, **kwargs):
-        return super().list(self, request, args, kwargs)
-
-    @method_decorator(cache_page(settings.CACHE_TIME))
     def retrieve(self, request, *args, **kwargs):
         category = self.get_object()
         serializer = CategoryRetrieveSerializer(category)
@@ -26,10 +22,6 @@ class CategoryViewSet(ModelViewSet):
 class TodoListViewSet(ModelViewSet):
     queryset = TodoList.objects.all()
     serializer_class = TodoListSerializer
-
-    @method_decorator(cache_page(settings.CACHE_TIME))
-    def list(self, request, *args, **kwargs):
-        return super().list(self, request, args, kwargs)
 
     @method_decorator(cache_page(settings.CACHE_TIME))
     def retrieve(self, request, *args, **kwargs):
