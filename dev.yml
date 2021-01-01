@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/Dockerfile
+    image: todos
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - todos_static:/home/django/app/static/
+    expose:
+      - 8700
+    env_file:
+      - .env
+    command: /start.sh
+    container_name: todos_django
+
+  db:
+    image: postgres:9.6
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_todos_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    container_name: todos_postgres
+
+  nginx:
+    build: ./compose/nginx/
+    volumes:
+      - todos_static:/home/django/app/static/
+    ports:
+      - "8700:80"
+    depends_on:
+      - django
+    container_name: todos_nginx
+
+volumes:
+  postgres_todos_data: {}
+  todos_static: {}

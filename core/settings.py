@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
+env = environ.Env()
+environ.Env.read_env(env_file='.env')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,12 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3*f#+66b4i+^vfa#rtlkye9z&)w$g^z1+kp7iniarx14(hqcte'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.str('ALLOWED_HOSTS').split(' ')
 
 
 # Application definition
@@ -37,6 +41,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # third party
+    'mptt',
+    'rest_framework',
+    
+    # custom
+    'todos'
 ]
 
 MIDDLEWARE = [
@@ -73,10 +84,21 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     # read os.environ['DATABASE_URL'] and raises ImproperlyConfigured exception if not found
+#     'default': env.db(),
+#     'extra': env.db('SQLITE_URL', default='sqlite:////tmp/sqlite3.db')
+# }
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        "ENGINE": env.str("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": env.str("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": env.str("SQL_USER", "user"),
+        "PASSWORD": env.str("SQL_PASSWORD", "password"),
+        "HOST": env.str("SQL_HOST", "localhost"),
+        "PORT": env.str("SQL_PORT", "5432"),
     }
 }
 
@@ -118,3 +140,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+CACHE_TIME = 1
